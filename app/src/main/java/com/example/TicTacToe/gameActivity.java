@@ -23,7 +23,7 @@ import com.example.TicTacToe.databinding.GameDialogBinding;
 public class gameActivity extends AppCompatActivity {
 
     fbController authHelper;
-    ImageView img;
+    ImageView topLeft, topMiddle, topRight, middleLeft, middleMiddle, middleRight, bottomLeft, bottomMiddle, bottomRight;
     Dialog dialog;
 
 
@@ -41,24 +41,30 @@ public class gameActivity extends AppCompatActivity {
             return insets;
         });
 
-        img = findViewById(R.id.topLeft);
+        // Array of ImageView IDs
+        int[] imageViews = {
+                R.id.topLeft, R.id.top, R.id.topRight,
+                R.id.midLeft, R.id.mid, R.id.midRight,
+                R.id.bottomLeft, R.id.bottom, R.id.bottomRight
+        };
 
-        img.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                dialog.setContentView(R.layout.game_dialog);
-                dialog.show();
-                dialog.findViewById(R.id.ConfirmChoice).setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View view) {
-                        //functionality will be added here
-                        dialog.hide();
-                    }
-
-                });
-
-            }
-        });
+        // Loop through the array and set the OnClickListener for each ImageView
+        for (int imageViewId : imageViews) {
+            ImageView img = findViewById(imageViewId);
+            img.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    dialog.setContentView(R.layout.game_dialog);
+                    dialog.show();
+                    dialog.findViewById(R.id.ConfirmChoice).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            //functionality will be added here
+                            dialog.hide();
+                        }
+                    });
+                }
+            });
+        }
 
     }
 
