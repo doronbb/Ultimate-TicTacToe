@@ -48,6 +48,14 @@ public class gameActivity extends AppCompatActivity {
 
                 dialog.setContentView(R.layout.game_dialog);
                 dialog.show();
+                dialog.findViewById(R.id.ConfirmChoice).setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        //functionality will be added here
+                        dialog.hide();
+                    }
+
+                });
 
             }
         });
