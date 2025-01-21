@@ -1,15 +1,13 @@
 package com.example.TicTacToe;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -18,20 +16,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.TicTacToe.databinding.GameDialogBinding;
-
 public class gameActivity extends AppCompatActivity {
 
     fbController authHelper;
-    ImageView topLeft, topMiddle, topRight, middleLeft, middleMiddle, middleRight, bottomLeft, bottomMiddle, bottomRight;
     Dialog dialog;
-
+    gameBoard board; // Add the gameBoard member variable
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         dialog = new Dialog(this);
-
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_game);
@@ -41,34 +35,44 @@ public class gameActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Array of ImageView IDs
-        int[] imageViews = {
-                R.id.topLeft, R.id.top, R.id.topRight,
-                R.id.midLeft, R.id.mid, R.id.midRight,
-                R.id.bottomLeft, R.id.bottom, R.id.bottomRight
+        // Initialize gameBoard after setting the content view
+        ImageView[] imageViews = {
+                findViewById(R.id.topLeft), findViewById(R.id.top), findViewById(R.id.topRight),
+                findViewById(R.id.midLeft), findViewById(R.id.mid), findViewById(R.id.midRight),
+                findViewById(R.id.bottomLeft), findViewById(R.id.bottom), findViewById(R.id.bottomRight)
         };
+        board = new gameBoard(imageViews); // Initialize the board
 
-        // Loop through the array and set the OnClickListener for each ImageView
-        for (int imageViewId : imageViews) {
-            ImageView img = findViewById(imageViewId);
-            img.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    dialog.setContentView(R.layout.game_dialog);
-                    dialog.show();
-                    dialog.findViewById(R.id.ConfirmChoice).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            //functionality will be added here
-                            dialog.hide();
-                        }
-                    });
-                }
-            });
+        // Set click listeners for each cell
+        for (int i = 0; i < 3; i++) {
+
+                ImageView img = imageViews[i];
+                final int bigBoardPosition = i * 3 + j; // Calculate the big board position
+
+                img.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        // ... existing code ...
+                        dialog.findViewById(R.id.ConfirmChoice).setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int position = -1;
+                                switch (v.getId()) {
+                                    // Set position based on the clicked ImageView's ID
+                                    case R.id.topLeft: position = 0; break;
+                                    // ... add cases for other ImageViews ...
+                                    case R.id.bottomRight: position = 8; break;
+                                }
+                                if (position != -1) {
+                                    board.updateState(position); // Update the game state
+                                }
+                                dialog.hide();
+                            }
+                        });
+                    }
+                });
+
         }
-
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -81,7 +85,6 @@ public class gameActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         int itemID = item.getItemId();
-
         if(itemID == R.id.Settings){
             openSettings();
         }
@@ -114,5 +117,21 @@ public class gameActivity extends AppCompatActivity {
         Intent i;
         i = new Intent(this, loginActivity.class);
         this.startActivity(i);
+    }
+
+    // Helper method to determine the small board position based on the clicked view's ID
+    private int getSmallBoardPosition(int viewId) {
+        switch (viewId) {
+            case R.id.topLeft: return 0;
+            case R.id.top: return 1;
+            case R.id.topRight: return 2;
+            case R.id.midLeft: return 3;
+            case R.id.mid: return 4;
+            case R.id.midRight: return 5;
+            case R.id.bottomLeft: return 6;
+            case R.id.bottom: return 7;
+            case R.id.bottomRight: return 8;
+            default: return -1;
+        }
     }
 }
