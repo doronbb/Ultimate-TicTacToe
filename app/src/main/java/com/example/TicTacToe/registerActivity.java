@@ -25,7 +25,7 @@ public class registerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Intent logintent = new Intent(registerActivity.this, loginActivity.class);
+        Intent logintent = new Intent(registerActivity.this, LoginActivity.class);
 
         validator = new InputValidator();
         auth = FirebaseAuth.getInstance();
@@ -74,7 +74,7 @@ public class registerActivity extends AppCompatActivity {
                 }
                 else {
                     User user = new User(email);
-                    CreateUser.CreateUser(email, password,user);
+                    CreateUser.createUser(email, password,user);
                 }
             }
         });

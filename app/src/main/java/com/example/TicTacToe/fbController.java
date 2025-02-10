@@ -1,15 +1,14 @@
 package com.example.TicTacToe;
-import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.*;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -17,116 +16,168 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class fbController {
-    public static FirebaseAuth mAuth;
-    private Context context;
+    private static final String TAG = "FirebaseController";
+    private static final String USERS_PATH = "Users"; // Constant for database path
+
+    private FirebaseAuth mAuth; // No longer static
+    private final Context context;
     private FirebaseDatabase db;
     private DatabaseReference dbRef;
-    private User user;
+    private ValueEventListener userDataListener; // Store the listener
 
-    public FirebaseUser getUser()
-    {
-        return FirebaseAuth.getInstance().getCurrentUser();
+    public fbController(Context context) {
+        this.context = context.getApplicationContext();
+        initializeFirebase();
     }
 
-    public DatabaseReference getDbRef(String Ref) {
-        dbRef = db.getReference(Ref);
-        return dbRef;
+    private void initializeFirebase() {
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance();
     }
 
-    public void setDbRef(DatabaseReference dbRef) {
-        this.dbRef = dbRef;
+    public FirebaseUser getCurrentUser() {
+        return mAuth != null ? mAuth.getCurrentUser() : null;
     }
 
-    public FirebaseDatabase getDb() {
-        if(db==null)
-        {
-            db = FirebaseDatabase.getInstance();
-        }
-        return db;
+    public DatabaseReference getDatabaseReference(String path) {
+        return db.getReference(path);
     }
 
-    public void setDb(FirebaseDatabase db) {
-        this.db = db;
-    }
+    public void createUser(String email, String password, User user) {
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = task.getResult().getUser();
+                        if (firebaseUser != null) {
+                            // Combine user creation and database write
+                            user.setUid(firebaseUser.getUid()); // Set UID *before* writing
 
-    public void getData(IFirebaseCallback fbcallback)
-    {
-        DatabaseReference editUserRef = FirebaseDatabase.getInstance().getReference("users/123");
-        editUserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot userSnapshot)    {
-                User currentUser = userSnapshot.getValue(User.class);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-
-    public fbController(Context context)
-    {
-        this.context = context;
-        this.mAuth = FirebaseAuth.getInstance();
-        this.db = FirebaseDatabase.getInstance();
-    }
-
-    public static FirebaseAuth getAuth(){
-        if(mAuth == null)
-            mAuth = FirebaseAuth.getInstance();
-        return mAuth;
-    }
-
-
-    public void CreateUser (String email, String password, User user)
-    {
-        getAuth().createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            user.setUid(task.getResult().getUser().getUid());
-                            getDbRef("Users").child(user.getUid()).setValue(user);
-
-                            Toast.makeText(context.getApplicationContext(),"Authentication Successful",Toast.LENGTH_SHORT).show();
-                            context.startActivity(new Intent(context.getApplicationContext(), mainActivity.class));
-
-                        } else {
-                            Toast.makeText(context.getApplicationContext(),"Authentication failed",Toast.LENGTH_SHORT).show();
+                            getDatabaseReference(USERS_PATH).child(firebaseUser.getUid()).setValue(user)
+                                    .addOnCompleteListener(dbTask -> {
+                                        if (dbTask.isSuccessful()) {
+                                            navigateToMainActivity();
+                                            showToast("Registration Successful");
+                                        } else {
+                                            // More specific error handling
+                                            handleDatabaseError(dbTask.getException());
+                                        }
+                                    });
                         }
+                    } else {
+                        // More specific error handling
+                        handleAuthError(task.getException());
                     }
                 });
     }
-    public void LoginUser(String email, String password)
-    {
+
+    public void loginUser(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(context.getApplicationContext(),"Authentication Successful",Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            startActivity(context,new Intent(context,mainActivity.class), null);
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(context.getApplicationContext(),"Authentication failed",Toast.LENGTH_SHORT).show();
-
-                        }
-                    }});
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        navigateToMainActivity();
+                        showToast("Login Successful");
+                    } else {
+                        // More specific error handling
+                        handleAuthError(task.getException());
+                    }
+                });
+    }
+    // Interface for navigation
+    public interface NavigationListener {
+        void navigateToMain();
+        void navigateToLogin();
     }
 
-    public void LogOutUser()
-    {
-        mAuth.signOut();
-        startActivity(context,new Intent(context,loginActivity.class), null);
+    private NavigationListener navigationListener;
+
+    public void setNavigationListener(NavigationListener listener) {
+        this.navigationListener = listener;
+    }
+    public void logoutUser() {
+        if (mAuth != null) {
+            mAuth.signOut();
+            if (navigationListener != null){
+                navigationListener.navigateToLogin();
+            }
+        }
     }
 
-    public boolean isLoggedIn()
-    {
-        return getAuth().getCurrentUser() != null;
+    public boolean isLoggedIn() {
+        return getCurrentUser() != null;
+    }
+
+    void navigateToMainActivity() {
+        if (navigationListener != null){
+            navigationListener.navigateToMain();
+        }
+    }
+
+    private void navigateToLoginActivity() { // Added for consistency
+        if(navigationListener != null){
+            navigationListener.navigateToLogin();
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+    public void fetchUserData(String userId, UserDataCallback callback) {
+        DatabaseReference userRef = getDatabaseReference(USERS_PATH + "/" + userId);
+        // Store the listener so we can remove it later
+        userDataListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                callback.onUserDataReceived(user);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Error fetching user data", error.toException());
+                callback.onError(error.toException());
+            }
+        };
+        userRef.addValueEventListener(userDataListener);
+    }
+
+    public void removeUserDataListener(String userId) {
+        if (userDataListener != null) {
+            getDatabaseReference(USERS_PATH + "/" + userId).removeEventListener(userDataListener);
+            userDataListener = null; // Clear the reference
+        }
+    }
+
+    public interface UserDataCallback {
+        void onUserDataReceived(User user);
+        void onError(Exception e);
+    }
+
+    // Helper method for handling authentication errors
+    private void handleAuthError(Exception exception) {
+        if (exception != null) {
+            Log.e(TAG, "Authentication error", exception);
+            showToast("Authentication failed: " + exception.getMessage());
+            // You could add more specific error handling here based on the exception type
+        } else {
+            showToast("Authentication failed: Unknown error");
+        }
+    }
+
+    // Helper method for handling database errors
+    private void handleDatabaseError(Exception exception) {
+        if (exception != null) {
+            Log.e(TAG, "Database error", exception);
+            showToast("Database operation failed: " + exception.getMessage());
+        } else {
+            showToast("Database operation failed: Unknown error");
+        }
+    }
+    // Method to be called when the component using fbController is destroyed
+    public void cleanup() {
+        // Remove any remaining listeners to prevent leaks
+        if (userDataListener != null) {
+            //remove the listener on the appropriate ref, this will differ.
+            //userDataListener = null; //removed, as reference needs clearing
+        }
     }
 }

@@ -13,26 +13,23 @@
         android:theme="@style/Theme.TicTacToe"
         tools:targetApi="31">
         <activity
-            android:name=".ModifiedGameActivity"
+            android:name=".GameActivity"
             android:exported="false" />
         <activity
-            android:name=".gameActivity"
+            android:name=".SettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".settingsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".hostActivity"
+            android:name=".HostActivity"
             android:exported="false" />
         <activity
             android:name=".registerActivity"
             android:exported="false" />
         <activity
-            android:name=".mainActivity"
+            android:name=".MainActivity"
             android:exported="false" >
         </activity>
         <activity
-            android:name=".loginActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

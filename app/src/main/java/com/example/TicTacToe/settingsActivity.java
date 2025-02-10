@@ -25,17 +25,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class settingsActivity extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity {
 
     Button btnSave;
     AlertDialog.Builder builder;
     EditText etEmail;
-    fbController auth = new fbController(settingsActivity.this);
+    fbController auth = new fbController(SettingsActivity.this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Intent saveExit = new Intent(settingsActivity.this, mainActivity.class);
+        Intent saveExit = new Intent(SettingsActivity.this, MainActivity.class);
         builder = new AlertDialog.Builder(this);
 
         super.onCreate(savedInstanceState);
@@ -55,7 +55,7 @@ public class settingsActivity extends AppCompatActivity {
         // Get the current user's UID
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        FirebaseUser user = auth.getUser();
+        FirebaseUser user = auth.getCurrentUser();
         etEmail.setText(user.getEmail());
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(uid);
@@ -84,7 +84,7 @@ public class settingsActivity extends AppCompatActivity {
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                settingsActivity.this.startActivity(saveExit);
+                                SettingsActivity.this.startActivity(saveExit);
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -123,17 +123,17 @@ public class settingsActivity extends AppCompatActivity {
     }
 
     private void gotoMain() {
-        Intent i = new Intent(this, mainActivity.class);
+        Intent i = new Intent(this, MainActivity.class);
         this.startActivity(i);
     }
 
     private void openSettings() {
-        Intent i = new Intent(this, settingsActivity.class);
+        Intent i = new Intent(this, SettingsActivity.class);
         this.startActivity(i);
     }
 
     private void LogOut() {
-        Intent i = new Intent(this, loginActivity.class);
+        Intent i = new Intent(this, LoginActivity.class);
         this.startActivity(i);
     }
 }

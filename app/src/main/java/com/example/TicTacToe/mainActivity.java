@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -17,32 +17,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.Firebase;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser; // Import FirebaseUser
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 
-public class mainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     TextView tvMessage;
-
     FloatingActionButton btnAdd;
     MenuItem Settings;
-    fbController auth = new fbController(mainActivity.this);
+    private fbController auth; // Declare, but don't initialize here
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        //addList check
-        Intent addIntent = new Intent(mainActivity.this, hostActivity.class);
-
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState); // Call super.onCreate first
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -51,102 +39,78 @@ public class mainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Initialize fbController *inside* onCreate
+        auth = new fbController(this);
+        auth.setNavigationListener(new fbController.NavigationListener() {
+            @Override
+            public void navigateToMain() {
+                // We are already in main, so just show a Toast.
+                Toast.makeText(MainActivity.this, "Already in Main Activity", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void navigateToLogin() {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish(); // Prevent going back to main activity after logout
+            }
+        });
         ArrayList<Game> games = new ArrayList<>();
-        for (int i = 1; i < 11; i++)
-        {
-            games.add(new Game("Game "+ i, "Host: "));
+        for (int i = 1; i < 11; i++) {
+            games.add(new Game("Game " + i, "Host: "));
         }
         RecyclerView recyclerView = findViewById(R.id.rvGames);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
 
-        GameAdapter gameAdapter = new GameAdapter(games);
+        GameAdapter gameAdapter = new GameAdapter(games);  // Make sure you have a GameAdapter class
         recyclerView.setAdapter(gameAdapter);
 
-
         tvMessage = findViewById(R.id.tvMessage);
-
         btnAdd = findViewById(R.id.btnHost);
 
-        // Get the current user
-        FirebaseUser user = auth.getUser();
-
+        FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
-            // Get the email address
             String email = user.getEmail();
-
             if (email != null) {
-                // Extract the username from the email address
                 String username = email.substring(0, email.indexOf('@'));
-
-                // Update the TextView with the username
                 tvMessage.setText("Welcome back, " + username + "!");
             } else {
-                // Handle the case where the user's email is null
                 tvMessage.setText("Welcome back!");
             }
         } else {
-            // Handle the case where there is no logged-in user
             tvMessage.setText("Welcome!");
         }
 
-        btnAdd.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                mainActivity.this.startActivity(addIntent);
-
-            }
+        btnAdd.setOnClickListener(v -> {
+            Intent addIntent = new Intent(this, HostActivity.class);
+            startActivity(addIntent);
         });
     }
 
-
-
-
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-
-        getMenuInflater().inflate(R.menu.main_menu,menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         int itemID = item.getItemId();
 
-        if(itemID == R.id.Settings){
-            openSettings();
+        if (itemID == R.id.Settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true; // Consume the event
+        } else if (itemID == R.id.LogOut) {
+            auth.logoutUser(); // Use the fbController's logout method
+            return true; // Consume the event
+        } else if (itemID == R.id.Main) {
+            Toast.makeText(this, "Already in Main Activity", Toast.LENGTH_SHORT).show();
+            return true;
         }
-        if(itemID == R.id.LogOut){
-            auth.LogOutUser();
-        }
-        if(itemID == R.id.Main){
-            gotoMain();
-        }
 
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void gotoMain(){
-
-        Intent i;
-        i = new Intent(this, mainActivity.class);
-        this.startActivity(i);
-    }
-
-    private void openSettings(){
-
-        Intent i;
-        i = new Intent(this, settingsActivity.class);
-        this.startActivity(i);
-
-    }
-
-    private void LogOut(){
-        Intent i;
-        i = new Intent(this, loginActivity.class);
-        this.startActivity(i);
+        return super.onOptionsItemSelected(item); // Important for other menu items
     }
 }
