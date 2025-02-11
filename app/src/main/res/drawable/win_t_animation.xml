@@ -1,6 +1,7 @@
-<!-- res/drawable/win_t_animation.xml -->
+<?xml version="1.0" encoding="utf-8"?>
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/ic_t">
+
     <target
         android:name="t"
         android:animation="@anim/t_draw_animation" />

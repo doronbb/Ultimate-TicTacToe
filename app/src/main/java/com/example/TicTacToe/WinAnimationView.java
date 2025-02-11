@@ -46,7 +46,7 @@ public class WinAnimationView extends View {
         if (winAnimation != null) {
             winAnimation.setBounds(0, 0, getWidth(), getHeight());
             winAnimation.draw(canvas);
-            if (animatable != null) {
+            if (animatable != null && !animatable.isRunning()) {
                 animatable.start();
             }
         }

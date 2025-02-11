@@ -129,6 +129,7 @@ public class GameBoard {
         int drawableId = currentPlayer == 1 ? R.drawable.win_x_animation : R.drawable.win_o_animation;
         animationView.setWinAnimation(ContextCompat.getDrawable(context, drawableId));
         smallBoardRoot.addView(animationView);
+        animationView.bringToFront();
     }
 
     private void clearAllWinAnimations() {
