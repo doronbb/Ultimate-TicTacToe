@@ -4,6 +4,6 @@
         android:duration="1000"
         android:valueFrom="M6,2 L6,2 M12,2 L12,2"
         android:valueTo="M6,2 L18,2 M12,2 L12,20"
-        android:valueType="string"
+        android:valueType="pathType"
         android:interpolator="@android:interpolator/accelerate_decelerate" />
 </set>
