@@ -79,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         btnRegister.setOnClickListener(v -> {
-            Intent regintent = new Intent(this, registerActivity.class); // Create intent here
+            Intent regintent = new Intent(this, RegisterActivity.class); // Create intent here
             startActivity(regintent);
             // Don't call finish() here.  You want the user to be able to come back to login
         });

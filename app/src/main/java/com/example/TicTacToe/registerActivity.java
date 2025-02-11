@@ -14,7 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-public class registerActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
 
     Button btnLoginA;
     Button btnRegisterM;
@@ -25,7 +25,7 @@ public class registerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        Intent logintent = new Intent(registerActivity.this, LoginActivity.class);
+        Intent logintent = new Intent(RegisterActivity.this, LoginActivity.class);
 
         validator = new InputValidator();
         auth = FirebaseAuth.getInstance();
@@ -45,7 +45,7 @@ public class registerActivity extends AppCompatActivity {
 
         btnLoginA.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                registerActivity.this.startActivity(logintent);
+                RegisterActivity.this.startActivity(logintent);
 
             }
         });
@@ -53,7 +53,7 @@ public class registerActivity extends AppCompatActivity {
         EditText etEmail = findViewById(R.id.etEmailR);
         EditText etPassword = findViewById(R.id.etPasswordR);
         EditText etPassword2 = findViewById(R.id.etPasswordR2);
-        CreateUser = new fbController(registerActivity.this);
+        CreateUser = new fbController(RegisterActivity.this);
 
 
         btnRegisterM.setOnClickListener(new View.OnClickListener() {
