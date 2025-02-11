@@ -26,7 +26,7 @@ public class fbController {
     private ValueEventListener userDataListener; // Store the listener
 
     public fbController(Context context) {
-        this.context = context.getApplicationContext();
+        this.context = context;
         initializeFirebase();
     }
 

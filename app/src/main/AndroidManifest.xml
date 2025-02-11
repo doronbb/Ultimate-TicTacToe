@@ -22,7 +22,7 @@
             android:name=".HostActivity"
             android:exported="false" />
         <activity
-            android:name=".registerActivity"
+            android:name=".RegisterActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -37,6 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".services.BackgroundMusicService" android:enabled="true" android:exported="false" />
     </application>
 
 </manifest>
