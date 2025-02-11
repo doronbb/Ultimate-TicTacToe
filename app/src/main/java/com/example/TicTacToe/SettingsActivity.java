@@ -4,14 +4,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -20,7 +17,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.TicTacToe.services.BackgroundMusicService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,8 +24,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import android.content.SharedPreferences;
-
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -37,7 +31,6 @@ public class SettingsActivity extends AppCompatActivity {
     AlertDialog.Builder builder;
     EditText etEmail;
     fbController auth = new fbController(SettingsActivity.this);
-    Switch  musicSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,36 +51,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         btnSave = findViewById(R.id.btnSave);
         etEmail = findViewById(R.id.etEmailU);
-
-
-        musicSwitch = findViewById(R.id.music_switch);
-        SharedPreferences preferences = getSharedPreferences("TicTacToePrefs", MODE_PRIVATE);
-        boolean isMusicOn = preferences.getBoolean("musicSwitchState", false);  // Default to false
-        musicSwitch.setChecked(isMusicOn);
-
-        //Check for Switch state
-        musicSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isMusicOn) {
-                // Save the switch state to SharedPreferences
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putBoolean("musicSwitchState", isMusicOn);
-                editor.apply();
-
-                if (isMusicOn) {
-                    // Start the music service when the switch is ON
-                    Intent musicIntent = new Intent(SettingsActivity.this, BackgroundMusicService.class);
-                    startService(musicIntent);
-                } else {
-                    // Stop the music service when the switch is OFF
-                    Intent musicIntent = new Intent(SettingsActivity.this, BackgroundMusicService.class);
-                    stopService(musicIntent);
-                }
-            }
-        });
-
-
-
 
         // Get the current user's UID
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();

@@ -1,4 +1,4 @@
-// HHostActivity.java
+// hostActivity.java
 package com.example.TicTacToe;
 
 import android.content.Intent;
